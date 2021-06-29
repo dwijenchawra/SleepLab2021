@@ -31,8 +31,21 @@ parseable = [
     range(len(timestamps))]
 
 condition = False
-for i in range(len(parseable)):
-    initialtime = parseable[i][1]
+
+matrix = pd.DataFrame()
+initialtime = parseable[0][1]
+
+timesegment = [i[1] for i in parseable[0:17279]]
+
+
+col = 0
+df.insert(timesegment)
+df.set_index(0)
+for i in range(0, len(parseable)):
+    if parseable[i][1] == initialtime:
+        col += 1
+
+
 
 
 df.to_csv("F:\\ggir_missing_test\\out\\output_data\\meta\\csv\\1001787_90001_0_0.cwa.RData.IMPUTED.csv", index=False)

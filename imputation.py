@@ -1,6 +1,6 @@
 import pandas as pd
 
-IMPUTE_CSV = "F:\\ggir_missing_test\\out\\output_data\\meta\\csv\\1001787_90001_0_0.cwa.RData.csv"
+IMPUTE_CSV = "1001787_90001_0_0.cwa.RData.csv"
 starthour = "09"
 startmin = "14"
 startsec = "45"
