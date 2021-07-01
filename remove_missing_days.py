@@ -12,12 +12,18 @@ df = pd.read_csv(IMPUTE_CSV)
 timestamps = df['time']
 imputed = df['imputed']
 
-zipdict = dict(zip(timestamps, imputed))
+print("making parseable")
 
 parseable = [
     [list(map(int, str(timestamps[i]).split(" ")[0].split("-"))),
      list(map(int, str(timestamps[i]).split(" ")[1].split(".")[0].split(":"))),
-     imputed[i]]
+     imputed[i],
+     df["acc"][i],
+     df["MVPA"][i],
+     df["light"][i],
+     df["sedentary"][i],
+     df["sleep"][i],
+     df["MET"][i]]
     for i in range(len(timestamps))]
 
 final = []
@@ -26,6 +32,8 @@ prev = parseable[0][0][2]
 sum = 0
 count = 0
 
+print("starting loop")
+
 for i in range(0, len(parseable)):
     count += 1
     if parseable[i][0][2] != prev:
@@ -33,12 +41,14 @@ for i in range(0, len(parseable)):
         ratio = sum / count
         if ratio < 0.5:
             final.extend(parseable[i - (count - 1):i])
-            #todo add df values to new df
         sum = 0
         count = 0
     sum += parseable[i][2]
 
 def revertList(data):
-    return [[revertTime(i[0][0], i[0][1], i[0][2], i[1][0], i[1][1], i[1][2]), i[2]] for i in data]
+    return [[revertTime(i[0][0], i[0][1], i[0][2], i[1][0], i[1][1], i[1][2])] + i[2:] for i in data]
+
+print("creating export list")
 
 export = revertList(final)
+pass
