@@ -7,11 +7,17 @@ from ggir_csv_prep_for_nparact import convertForNPARact
 # import rpy2
 # from rpy2.robjects.packages import importr
 
+class Masks:
+    twelveHourGap = [(22, 10)]
+    twoHourGap = [(10, 12), (12, 14), (14, 16), (16, 18), (18, 20)]
+    fourHourGap = [(10, 2), (2, 6), (6, 10)]
+    sixHourGap = [(10, 4), (4, 10)]
+    multipleSingleDay = [(10, 12), (14, 16), (18, 20)]
+    multipleInWeek = [(10, 12), (6, 8)]
+
 
 def applyMask(filePath, mask):
     df = pd.read_csv(filePath)
-
-
 
 
 print("Creating completedfiles list")
@@ -32,13 +38,4 @@ if len(os.listdir(r'C:\Users\Jamie\Documents\biobank_analysis_files\completenpar
 print("Applying selected mask to files")
 
 for filePath in tqdm(completedFiles):
-    applyMask(filePath)
-
-
-class Masks:
-    twelveHourGap = [(22, 10)]
-    twoHourGap = [(10, 12), (12, 14), (14, 16), (16, 18), (18, 20)]
-    fourHourGap = [(10, 2), (2, 6), (6, 10)]
-    sixHourGap = [(10, 4), (4, 10)]
-    multipleSingleDay = [(10, 12), (14, 16), (18, 20)]
-    multipleInWeek = 
+    applyMask(filePath, Masks.twelveHourGap)
