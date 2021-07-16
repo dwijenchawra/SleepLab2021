@@ -47,7 +47,7 @@ def applyMask(filePath, mask, weekday, destination):
                     df.iloc[i:i + maskDuration, 1] = 0
                     df.to_csv(maskedFileName, header=False, index=False)
         elif type(maskvalue[0]) == tuple:
-            pass
+            pass #
 
 
 print("Creating completedfiles list")
