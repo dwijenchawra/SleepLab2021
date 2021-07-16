@@ -19,23 +19,35 @@ class Masks:
 
 
 def maskToString(maskvalue):
-    pass
+    if type(maskvalue[0]) == int:
+        lst = []
+        for i in maskvalue:
+            lst.append(str(i))
+        return "-".join(lst)
+    lst = []
+    for i in maskvalue:
+        if type(i) == tuple:
+            lst.append(maskToString(i))
+    return ".".join(lst)
+
 
 
 def applyMask(filePath, mask, weekday, destination):
     # 2014/10/01 10:15:00,23.6104
     df = pd.read_csv(filePath, header=None)
     for maskvalue in mask:
-        maskedFileName = os.path.join(maskedLocation, os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(maskvalue)}.csv")
-        for i in range(0, len(df.iloc[:, 0])):
-            dayString = datetime.date(int(timeList[0][2]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
-            if dayString != weekday:
-                continue
-            time = str(df.iloc[i, 0])
-            timeList = [time.split(" ")[0].split("/"), time.split(" ")[1].split(":")]
-            if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
-                maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720  # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
-                df.iloc[i:i + maskDuration, 1] = 0
+        if type(maskvalue[0]) == int:
+            maskedFileName = os.path.join(maskedLocation, os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(maskvalue)}.csv")
+            for i in range(0, len(df.iloc[:, 0])):
+                time = str(df.iloc[i, 0])
+                timeList = [time.split(" ")[0].split("/"), time.split(" ")[1].split(":")]
+                dayString = datetime.date(int(timeList[0][2]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
+                if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
+                    maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720  # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
+                    df.iloc[i:i + maskDuration, 1] = 0
+                    df.to_csv(maskedFileName, header=False, index=False)
+        elif type(maskvalue[0]) == tuple:
+            pass
 
 
 print("Creating completedfiles list")
