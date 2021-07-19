@@ -9,14 +9,17 @@ from ggir_csv_prep_for_nparact import convertForNPARact
 maskedLocation = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\maskedFiles"
 
 
-class Masks:
+class SingleDayMasks:
     twelveHourGap = [(22, 10)]
     twoHourGap = [(10, 12), (12, 14), (14, 16), (16, 18), (18, 20)]
     fourHourGap = [(10, 2), (2, 6), (6, 10)]
     sixHourGap = [(10, 4), (4, 10)]
+    twentyFourHourGap = [(10, 22)]
     multipleSingleDay = [((10, 12), (14, 16), (18, 20))]
-    multipleInWeek = [((10, 12), (6, 8))]
 
+
+class MultipleDayMasks:
+    multipleInWeek = [((10, 12), (6, 8))]
 
 def maskToString(maskvalue):
     if type(maskvalue[0]) == int:
@@ -31,23 +34,25 @@ def maskToString(maskvalue):
     return ".".join(lst)
 
 
-
-def applyMask(filePath, mask, weekday, destination):
+def applyMaskOnce(filePath, mask, weekday, destination):
     # 2014/10/01 10:15:00,23.6104
-    df = pd.read_csv(filePath, header=None)
+
     for maskvalue in mask:
-        if type(maskvalue[0]) == int:
-            maskedFileName = os.path.join(maskedLocation, os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(maskvalue)}.csv")
-            for i in range(0, len(df.iloc[:, 0])):
-                time = str(df.iloc[i, 0])
-                timeList = [time.split(" ")[0].split("/"), time.split(" ")[1].split(":")]
-                dayString = datetime.date(int(timeList[0][2]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
-                if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
-                    maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720  # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
-                    df.iloc[i:i + maskDuration, 1] = 0
-                    df.to_csv(maskedFileName, header=False, index=False)
-        elif type(maskvalue[0]) == tuple:
-            pass #
+        maskedFileName = os.path.join(maskedLocation,
+                                      os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask)}.csv")
+        df = pd.read_csv(filePath, header=None)
+        for i in range(0, len(df.iloc[:, 0])):
+            time = str(df.iloc[i, 0])
+            timeList = [time.split(" ")[0].split("/"), time.split(" ")[1].split(":")]
+            dayString = datetime.date(int(timeList[0][2]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
+            if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
+                # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
+                maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
+                df.iloc[i:i + maskDuration, 1] = 0
+                df.to_csv(maskedFileName, header=False, index=False)
+                break
+
+# def applyMaskWeek(filePath, multipleInWeek, maskedLocation):
 
 
 print("Creating completedfiles list")
@@ -69,5 +74,21 @@ print("Applying selected mask to files and imputing")
 
 nparACTCSVPath = r"C:\Users\Jamie\Documents\biobank_analysis_files\completenparactcsv"
 completedNparACTFiles = [os.path.join(nparACTCSVPath, file) for file in os.listdir(nparACTCSVPath)]
+
+
+
 for filePath in tqdm(completedNparACTFiles):
-    applyMask(filePath, Masks.twelveHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Saturday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twoHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twoHourGap, "Saturday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.fourHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.fourHourGap, "Saturday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.sixHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.sixHourGap, "Saturday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Wednesday", maskedLocation)
+    applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Saturday", maskedLocation)
+    # applyMaskOnce(filePath, SingleDayMasks.multipleSingleDay, "Wednesday", maskedLocation)
+    # applyMaskOnce(filePath, SingleDayMasks.multipleSingleDay, "Saturday", maskedLocation)
+
+    # applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek, maskedLocation)
