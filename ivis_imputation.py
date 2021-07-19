@@ -7,6 +7,7 @@ from tqdm import tqdm
 from ggir_csv_prep_for_nparact import convertForNPARact
 
 maskedLocation = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\maskedFiles"
+imputedLocation = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\imputedFiles"
 
 
 class SingleDayMasks:
