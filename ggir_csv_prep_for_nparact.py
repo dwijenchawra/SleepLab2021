@@ -8,7 +8,7 @@ def convertForNPARact(path: str, destination: str):
 
     for i in range(len(df["timestamp"])):
         date = str(df.at[i, "timestamp"]).split("T")[0]
-        date = str(str(date).replace("-", "/"))
+        # date = str(str(date).replace("-", "/"))
         t = str(df.at[i, "timestamp"]).split("T")[1].removesuffix("-0700")
         df.at[i, "timestamp"] = f"{date} {t}"
 
