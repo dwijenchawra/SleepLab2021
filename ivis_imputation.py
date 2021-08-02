@@ -3,11 +3,14 @@ import math
 
 import pandas as pd
 import os
+
 from tqdm import tqdm
 from ggir_csv_prep_for_nparact import convertForNPARact
 
+completedFilesPath = r"C:\Users\Jamie\Documents\biobank_analysis_files\completecsv"
 maskedLocation = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\maskedFiles"
 imputedLocation = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\imputedFiles"
+nparACTPreppedFiles = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\nparACTPreppedFiles"
 
 
 class SingleDayMasks:
@@ -36,71 +39,130 @@ def maskToString(maskvalue):
     return ".".join(lst)
 
 
-def imputeSingleIntervalMask(maskedFileName, maskStart, maskDuration):
-    df = pd.read_csv(maskedFileName, header=None)
-
-    week = datetime.timedelta(days=7)
-
-    for i in range(0, len(df.iloc[maskStart:maskStart + maskDuration, 0])): #loop over mask
-        time = str(df.iloc[i, 0])
-        timestamp = datetime.date.fromisoformat(time)
-        df = df.set_index(0)
-
-        while True:
-            try:
-                timestamp += week
-
-
-                df.loc()
-
-
-
 def separateTimestamp(time):
     return [time.split(" ")[0].split("-"), time.split(" ")[1].split(":")]
 
-# def timeToNPARACTFormat(year, month, day, hour, minute, second):
-#     return f"{year}/{month}/{day} {hour}:{minute}:{second}"
 
-def timeToISOFormat(year, month, day, hour, minute, second):
-    return f"{year}-{month}-{day} {hour}:{minute}:{second}"
+def imputeSingleIntervalMask(maskedFileName, weekday, mask, maskStart, maskDuration):
+    imputedFileName = os.path.join(imputedLocation,
+                                   os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask)}.IMPUTED.csv")
+    df = pd.read_csv(maskedFileName, header=None)
+    day = datetime.timedelta(days=1)
+
+    for i in tqdm(range(0, maskDuration)):  # loop over mask
+        time = str(df.iloc[maskStart + i, 0])
+
+        sum = 0
+        count = 0
+        loc = maskStart + (1440 * 12)  # mins per day * samples per min
+        while True:
+            try:
+                sum += float(df.iloc[loc, 1])
+                loc += (1440 * 12)
+                count += 1
+            except IndexError:
+                try:
+                    avg = sum / count
+                except ZeroDivisionError as s:
+                    imputedFileName = os.path.join(imputedLocation,
+                                                   os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask)}.IMPUTED.ZERODIVBLANK.csv")
+                    df.to_csv(imputedFileName, header=None, index=None)
+                    return None
+                df.iloc[maskStart + i, 1] = avg
+                break
+
+    df.to_csv(imputedFileName, header=None, index=None)
+
+
+def imputeMultipleInDay(maskedFileName, dfToImpute, weekday, mask, maskStart, maskDuration):
+    imputedFileName = os.path.join(imputedLocation,
+                                   os.path.basename(filePath)[:-4] + f"{weekday}.{maskToString(mask)}.IMPUTED.csv")
+    day = datetime.timedelta(days=1)
+
+    # [((10, 12), (14, 16), (18, 20))]
+    for maskvalue in mask[0]:
+        maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
+        for i in tqdm(range(0, maskDuration)):  # loop over mask
+            time = str(dfToImpute.iloc[maskStart + i, 0])
+
+            sum = 0
+            count = 0
+            loc = maskStart + (1440 * 12)  # mins per day * samples per min
+            while True:
+                try:
+                    sum += float(dfToImpute.iloc[loc, 1])
+                    loc += (1440 * 12)
+                    count += 1
+                except IndexError:
+                    try:
+                        avg = sum / count
+                    except ZeroDivisionError as s:
+                        return None
+                    dfToImpute.iloc[maskStart + i, 1] = avg
+                    break
+
+    # dfToImpute.to_csv(imputedFileName, header=None, index=None)
 
 
 def applyMaskOnce(filePath, mask, weekday, destination):
     for maskvalue in mask:
-        if type(maskvalue[0]) == int:
-            maskedFileName = os.path.join(maskedLocation,
-                                          os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(maskvalue)}.csv")
-            df = pd.read_csv(filePath, header=None)
-            for i in range(0, len(df.iloc[:, 0])):
-                time = str(df.iloc[i, 0])
-                timeList = separateTimestamp(time)
-                dayString = datetime.date(int(timeList[0][2]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
-                if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
-                    # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
-                    maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
-                    df.iloc[i:i + maskDuration, 1] = 0
-                    df.to_csv(maskedFileName, header=False, index=False)
+        maskedFileName = os.path.join(maskedLocation,
+                                      os.path.basename(filePath)[
+                                      :-4] + f".{weekday}.{maskToString(maskvalue)}.MASKED.csv")
+        df = pd.read_csv(filePath, header=None)
+        for i in range(0, len(df.iloc[:, 0])):
+            time = str(df.iloc[i, 0])
+            timeList = separateTimestamp(time)
+            dayString = datetime.date(int(timeList[0][0]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
+            # print(dayString)
+            # print(timeList)
+            # print(time)
+            if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
+                # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
+                maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
+                df.iloc[i:i + maskDuration, 1] = 0
+                df.to_csv(maskedFileName, header=False, index=False)
 
-                    imputeSingleIntervalMask(maskedFileName, i, maskDuration)
+                imputeSingleIntervalMask(maskedFileName, weekday, maskvalue, i, maskDuration)
 
-                    break
-        else:
-            pass
-            # todo implement multiple masks in one day
-            # todo implement imputation in one day
+                break
+
+
+def applyMultipleMaskSingleDay(filePath, mask, weekday, destination):
+    # [((10, 12), (14, 16), (18, 20))]
+    maskedFileName = os.path.join(maskedLocation,
+                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.csv")
+    df = pd.read_csv(filePath, header=None)
+    imputedDF = df.copy(deep=True)
+
+    for maskvalue in mask[0]:
+        for i in range(0, len(df.iloc[:, 0])):
+            time = str(df.iloc[i, 0])
+            timeList = separateTimestamp(time)
+            dayString = datetime.date(int(timeList[0][0]), int(timeList[0][1]), int(timeList[0][2])).strftime("%A")
+            if dayString == weekday and timeList[1][0] == str(maskvalue[0]):
+                # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
+                maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
+                df.iloc[i:i + maskDuration, 1] = 0
+
+                imputeMultipleInDay(maskedFileName, imputedDF, mask, weekday, i, imputedLocation)
+
+                break
+
+    df.to_csv(maskedFileName, header=False, index=False)
+    imputedDF.to_csv(imputedLocation, header=None, index=None)
 
 
 # def applyMaskWeek(filePath, multipleInWeek, maskedLocation):
 
 
 print("Creating completedfiles list")
-completedFilesPath = r"C:\Users\Jamie\Documents\biobank_analysis_files\completecsv"
 completedFiles = [os.path.join(completedFilesPath, file) for file in os.listdir(completedFilesPath)]
 
 print("Starting nparACT conversion")
-if len(os.listdir(r'C:\Users\Jamie\Documents\biobank_analysis_files\completenparactcsv')) == 0:
+if len(os.listdir(nparACTPreppedFiles)) == 0:
     for filePath in tqdm(completedFiles):
-        convertForNPARact(filePath, r'C:\Users\Jamie\Documents\biobank_analysis_files\completenparactcsv')
+        convertForNPARact(filePath, nparACTPreppedFiles)
 
 # print("Getting IV/IS for complete files")
 # for filePath in tqdm(completedFiles):
@@ -110,10 +172,10 @@ if len(os.listdir(r'C:\Users\Jamie\Documents\biobank_analysis_files\completenpar
 
 print("Applying selected mask to files and imputing")
 
-nparACTCSVPath = r"C:\Users\Jamie\Documents\biobank_analysis_files\completenparactcsv"
-completedNparACTFiles = [os.path.join(nparACTCSVPath, file) for file in os.listdir(nparACTCSVPath)]
+nparACTPreppedFilesList = [os.path.join(nparACTPreppedFiles, file) for file in os.listdir(nparACTPreppedFiles)]
 
-for filePath in tqdm(completedNparACTFiles):
+count = 1
+for filePath in tqdm(nparACTPreppedFilesList):
     applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Wednesday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Saturday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twoHourGap, "Wednesday", maskedLocation)
@@ -124,7 +186,4 @@ for filePath in tqdm(completedNparACTFiles):
     applyMaskOnce(filePath, SingleDayMasks.sixHourGap, "Saturday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Wednesday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Saturday", maskedLocation)
-    # applyMaskOnce(filePath, SingleDayMasks.multipleSingleDay, "Wednesday", maskedLocation)
-    # applyMaskOnce(filePath, SingleDayMasks.multipleSingleDay, "Saturday", maskedLocation)
-
-    # applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek, maskedLocation)
+    # applyMultipleMaskSingleDay(filePath, SingleDayMasks.multipleSingleDay, "Wednesday", maskedLocation)
