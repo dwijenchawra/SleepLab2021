@@ -1,6 +1,6 @@
 library("nparACT")
 
-files <- list.files(path="C:/Users/Jamie/PycharmProjects/SleepLab2021/nparACTPreppedFiles", pattern="*.csv", full.names=TRUE, recursive=FALSE)
+files <- list.files(path="C:/Users/Jamie/PycharmProjects/SleepLab2021/imputedFiles", pattern="*.csv", full.names=TRUE, recursive=FALSE)
 
 all_data <- data.frame()
 
@@ -25,5 +25,5 @@ for (i in files){
 }
 
 print(all_data)
-write.csv(all_data,"C:/Users/Jamie/PycharmProjects/SleepLab2021/nparACTPreppedFiles/IVIS_data_completefiles.csv", row.names = FALSE)
+write.csv(all_data,"C:/Users/Jamie/PycharmProjects/SleepLab2021/maskedFiles/IVIS_data_imputed.csv", row.names = FALSE)
 
