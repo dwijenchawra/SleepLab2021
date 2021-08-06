@@ -121,6 +121,7 @@ def applyMaskOnce(filePath, mask, weekday, destination):
                 # hours of time * samples per hour (0.2hz samples = 720 samples per hour)
                 maskDuration = abs(maskvalue[1] - maskvalue[0]) * 720
                 df.iloc[i:i + maskDuration, 1] = 0
+                # print(maskToString(maskvalue) + "   " + weekday)
                 df.to_csv(maskedFileName, header=False, index=False)
 
                 imputeSingleIntervalMask(maskedFileName, weekday, maskvalue, i, maskDuration)
@@ -176,6 +177,7 @@ nparACTPreppedFilesList = [os.path.join(nparACTPreppedFiles, file) for file in o
 
 count = 1
 for filePath in tqdm(nparACTPreppedFilesList):
+    print(filePath)
     applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Wednesday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twelveHourGap, "Saturday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twoHourGap, "Wednesday", maskedLocation)
