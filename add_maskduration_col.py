@@ -1,7 +1,7 @@
 import pandas as pd
 
-# masked = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\maskedFiles\IVIS_Data_masked.csv"
-imputed = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\imputedFiles\IVIS_Data_imputed.csv"
+imputed = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\lastmaskedFiles\IVIS_Data_masked.csv"
+# imputed = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\lastimputedFiles\IVIS_Data_imputed.csv"
 
 # maskedcsv = pd.read_csv(masked)
 imputedcsv = pd.read_csv(imputed)
@@ -18,11 +18,16 @@ for row in range(len(imputedcsv["filename"])):
     broken = filename.split(".")
     mask = list(map(int, broken[4].split("-")))
     print(mask)
-
-    if mask[0] == 22:
+    if broken[5].split("-")[0] != "MASKED":
+        masklencol.append(0)
+    elif mask[0] == 22:
         masklencol.append(12)
+    elif mask[0] == 10 and mask[1] == 22:
+        masklencol.append(24)
+    elif abs(mask[1] - mask[0]) == 8:
+        masklencol.append(4)
     else:
-        masklencol.append(mask[1] - mask[0])
+        masklencol.append(abs(mask[1] - mask[0]))
 
 print(masklencol)
 #
