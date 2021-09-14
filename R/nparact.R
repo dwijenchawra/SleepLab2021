@@ -1,6 +1,12 @@
 library("nparACT")
 
-files <- list.files(path= "../ggir_broken_nparACTPreppedFiles", pattern="*.csv", full.names=TRUE, recursive=FALSE)
+imputed = "C:/Users/Zeitzer Lab/Desktop/DWIJEN_FILES/PycharmProjects/SleepLab2021/biobank_nparACTPreppedFiles"
+#imputed = "C:/Users/Zeitzer Lab/Desktop/DWIJEN_FILES/PycharmProjects/SleepLab2021/ukbb_imputed"
+#masked = "C:/Users/Zeitzer Lab/Desktop/DWIJEN_FILES/PycharmProjects/SleepLab2021/ukbb_masked"
+
+# IMPUTED
+
+files <- list.files(path=imputed, pattern="*.csv", full.names=TRUE, recursive=FALSE)
 
 all_data <- data.frame()
 
@@ -22,7 +28,7 @@ for (i in files){
   if (grepl("ZERODIV", filename)) {
     all_data <- rbind(all_data, cbind(filename = filename, setNames(data.frame(matrix(ncol = 7, nrow = 1)), c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime"))))
   } else {
-    single_result <- nparACT_base("fullfilename", SR = 12/60, plot = T)
+    single_result <- nparACT_base("fullfilename", SR = 2/60, plot = T)
     print(single_result)
     single_result <- cbind(filename = filename, single_result)
     all_data <- rbind(all_data, single_result)
@@ -31,9 +37,11 @@ for (i in files){
 }
 
 print(all_data)
-write.csv(all_data,"C:/Users/Jamie/PycharmProjects/SleepLab2021/NPARACTTEST/IVIS_data_imputed.csv", row.names = FALSE)
+write.csv(all_data, paste(imputed, "IVIS_data_ORIGINAL.csv", sep = "_"), row.names = FALSE)
 
-files <- list.files(path="C:/Users/Jamie/PycharmProjects/SleepLab2021/lastmaskedFiles", pattern="*.csv", full.names=TRUE, recursive=FALSE)
+# MASKED
+
+files <- list.files(path=masked, pattern="*.csv", full.names=TRUE, recursive=FALSE)
 
 all_data <- data.frame()
 
@@ -54,7 +62,7 @@ for (i in files){
   if (grepl("ZERODIV", filename)) {
     all_data <- rbind(all_data, cbind(filename = filename, setNames(data.frame(matrix(ncol = 7, nrow = 1)), c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime"))))
   } else {
-    single_result <- nparACT_base("fullfilename", SR = 12/60, plot = F)
+    single_result <- nparACT_base("fullfilename", SR = 2/60, plot = F)
     print(single_result)
     single_result <- cbind(filename = filename, single_result)
     all_data <- rbind(all_data, single_result)
@@ -63,4 +71,4 @@ for (i in files){
 }
 
 print(all_data)
-# write.csv(all_data,"C:/Users/Jamie/PycharmProjects/SleepLab2021/lastmaskedFiles/IVIS_data_masked.csv", row.names = FALSE)
+write.csv(all_data, paste(masked, "IVIS_data_masked.csv", sep = "_"), row.names = FALSE)
