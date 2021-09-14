@@ -71,12 +71,12 @@ def imputeSingleIntervalMask(maskedFileName, weekday, mask, maskStart, maskDurat
                     imputedFileName = os.path.join(imputedLocation,
                                                    os.path.basename(filePath)[
                                                    :-4] + f".{weekday}.{maskToString(mask)}.IMPUTED.ZERODIVBLANK.csv")
-                    df.to_csv(imputedFileName, header=None, index=None)
+                    # df.to_csv(imputedFileName, header=None, index=None)
                     return None
                 df.iloc[maskStart + i, 1] = avg
                 break
 
-    df.to_csv(imputedFileName, header=None, index=None)
+    # df.to_csv(imputedFileName, header=None, index=None)
 
 
 def imputeMultipleInDay(maskedFileName, dfToImpute, weekday, mask, maskStart, maskDuration):
@@ -125,7 +125,7 @@ def applyMaskOnce(filePath, mask, weekday, destination):
                 maskDuration = abs(maskvalue[1] - maskvalue[0]) * SAMPLERATEHZ * 60
                 df.iloc[i:i + maskDuration, 1] = 0
                 # print(maskToString(maskvalue) + "   " + weekday)
-                df.to_csv(maskedFileName, header=None, index=None)
+                # df.to_csv(maskedFileName, header=None, index=None)
 
                 imputeSingleIntervalMask(maskedFileName, weekday, maskvalue, i, maskDuration)
 
@@ -135,9 +135,9 @@ def applyMaskOnce(filePath, mask, weekday, destination):
 def applyMultipleMaskSingleDay(filePath, mask, weekday, destination):
     # [((10, 12), (14, 16), (18, 20))]
     maskedFileName = os.path.join(maskedLocation,
-                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.csv")
+                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.MASKED.csv")
     imputedFileName = os.path.join(imputedLocation,
-                                   os.path.basename(filePath)[:-4] + f"{weekday}.{maskToString(mask)}.IMPUTED.csv")
+                                   os.path.basename(filePath)[:-4] + f"{weekday}.{maskToString(mask[0])}.IMPUTED.csv")
     maskedDF = pd.read_csv(filePath, header=None)
     imputedDF = maskedDF.copy(deep=True)
 
@@ -155,8 +155,8 @@ def applyMultipleMaskSingleDay(filePath, mask, weekday, destination):
 
                 break
 
-    maskedDF.to_csv(maskedFileName, header=None, index=None)
-    imputedDF.to_csv(imputedFileName, header=None, index=None)
+    # maskedDF.to_csv(maskedFileName, header=None, index=None)
+    # imputedDF.to_csv(imputedFileName, header=None, index=None)
 
 
 def imputeWeek(dfToImpute, startOfMask, maskDuration):
@@ -187,9 +187,13 @@ def imputeWeek(dfToImpute, startOfMask, maskDuration):
 def applyMaskWeek(filePath, mask, weekday, destination):
     # [(10, 12)]
     maskedFileName = os.path.join(maskedLocation,
-                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.csv")
+                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.MASKED.csv")
     imputedFileName = os.path.join(imputedLocation,
-                                   os.path.basename(filePath)[:-4] + f"{weekday}.{maskToString(mask)}.IMPUTED.csv")
+                                   os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask)}.IMPUTED.csv")
+
+    print(maskedFileName)
+    print(imputedFileName)
+
     maskedDF = pd.read_csv(filePath, header=None)
     imputedDF = maskedDF.copy(deep=True)
 
@@ -211,8 +215,8 @@ def applyMaskWeek(filePath, mask, weekday, destination):
                     break
 
 
-    maskedDF.to_csv(maskedFileName, header=None, index=None)
-    imputedDF.to_csv(imputedFileName, header=None, index=None)
+    # maskedDF.to_csv(maskedFileName, header=None, index=None)
+    # imputedDF.to_csv(imputedFileName, header=None, index=None)
 
 
 print("Creating completedfiles list")

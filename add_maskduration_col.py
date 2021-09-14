@@ -1,7 +1,7 @@
 import pandas as pd
 
-imputed = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\lastmaskedFiles\IVIS_Data_masked.csv"
-# imputed = r"C:\Users\Jamie\PycharmProjects\SleepLab2021\lastimputedFiles\IVIS_Data_imputed.csv"
+imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+# imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
 
 # maskedcsv = pd.read_csv(masked)
 imputedcsv = pd.read_csv(imputed)
@@ -16,18 +16,13 @@ nparactformat_1001699_90001_0_0.cwa.RData.Saturday.10-12.IMPUTED.csv
 for row in range(len(imputedcsv["filename"])):
     filename = str(imputedcsv["filename"][row])
     broken = filename.split(".")
-    mask = list(map(int, broken[4].split("-")))
+    mask = list(map(int, broken[2].split("-")))
     print(mask)
-    if broken[5].split("-")[0] != "MASKED":
+    if broken[-2] == "ZERODIVBLANK":
         masklencol.append(0)
-    elif mask[0] == 22:
-        masklencol.append(12)
-    elif mask[0] == 10 and mask[1] == 22:
-        masklencol.append(24)
-    elif abs(mask[1] - mask[0]) == 8:
-        masklencol.append(4)
     else:
         masklencol.append(abs(mask[1] - mask[0]))
+    # masklencol.append(broken[1])
 
 print(masklencol)
 #
@@ -46,4 +41,5 @@ print(masklencol)
 print(len(masklencol))
 
 imputedcsv["Mask Length"] = masklencol
+# imputedcsv["Weekday"] = masklencol
 imputedcsv.to_csv(imputed, index=None)
