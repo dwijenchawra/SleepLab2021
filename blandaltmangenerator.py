@@ -1,45 +1,64 @@
 from pprint import pprint
 
-import numpy as np
-import statsmodels.api as sm
-import pandas as pd
-
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from tqdm import tqdm
 
-import statsmodels.stats.descriptivestats
+# original = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
+# imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+# masked = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
 
-original = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
-imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
-masked = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
+original = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
+imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+masked = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
+
+maskCount = 30
 
 imputedcsv = pd.read_csv(imputed)
 maskedcsv = pd.read_csv(masked)
 originalcsv = pd.read_csv(original)
 
+repeatedOrig = pd.DataFrame(columns=["ORIGINAL IS", "ORIGINAL IV"])
+
+for i in tqdm(range(len(originalcsv.iloc[:, 1]))):  # is 1 iv 2
+    for j in range(maskCount):
+        repeatedOrig.loc[len(repeatedOrig)] = list(originalcsv.iloc[i, 1:3])
+
+maskedcsv = maskedcsv.rename(columns={"IS": "MASKED IS", "IV": "MASKED IV"})
+imputedcsv = imputedcsv.rename(columns={"IS": "IMPUTED IS", "IV": "IMPUTED IV"})
+repeatedOrig = repeatedOrig.join(maskedcsv["MASKED IS"])
+repeatedOrig = repeatedOrig.join(maskedcsv["MASKED IV"])
+repeatedOrig = repeatedOrig.join(imputedcsv["IMPUTED IS"])
+repeatedOrig = repeatedOrig.join(imputedcsv["IMPUTED IV"])
+repeatedOrig = repeatedOrig.join(imputedcsv["Mask Length"])
+repeatedOrig = repeatedOrig.join(imputedcsv["Weekday"])
 
 # = pd.DataFrame(columns=['A','B','C','D','E','F','G'])
 maskcol = []
 
-masks = list(dict.fromkeys(masked["Mask Length"]))
-days = list(dict.fromkeys(masked["Weekday"]))
+masks = list(dict.fromkeys(repeatedOrig["Mask Length"]))
+days = list(dict.fromkeys(repeatedOrig["Weekday"]))
 print(len(masks) * len(days))
 
 
 def plotter(axis, col1, col2, mask, day, title):
-
     fig = plt.Figure(figsize=(14, 10))
     ax = fig.add_subplot(111)
 
-    canvas = FigureCanvas(fig)
-    canvas.print_figure('testerplots/' + str(i.split("\\")[-1]) + ".png")
+    # canvas = FigureCanvas(fig)
+    # canvas.print_figure('plots/' + str(i.split("\\")[-1]) + ".png")
 
-    plot = sm.graphics.mean_diff_plot(col1, col2, ax=ax)
+    try:
+        plot = sm.graphics.mean_diff_plot(col1, col2, ax=ax)
+    except ValueError:
+        pass
     plt.title(title)
     plt.tight_layout()
     canvas = FigureCanvas(fig)
-    canvas.print_figure('plots/' + + "\\" + title + ".png", bbox_inches="tight")
+    canvas.print_figure('plots/' + title + ".png", bbox_inches="tight")
     # plot.savefig(r"C:\Users\Jamie\PycharmProjects\SleepLab2021\plots" + "\\" + title + ".png", bbox_inches="tight")
     # # plt.show()
     # axis.cla()
@@ -55,7 +74,7 @@ def statsPrinter(ax, m1, m2, mask, day, title):
 
 for mask in masks:
     for day in days:
-        maskdf = STATSCSV.loc[STATSCSV['Mask Length'] == mask]
+        maskdf = repeatedOrig.loc[repeatedOrig['Mask Length'] == mask]
         maskdaydf = maskdf.loc[maskdf['Weekday'] == day]
         # print(maskdaydf)
         # print("\n\n\n\n")
@@ -64,13 +83,19 @@ for mask in masks:
         print(f"{mask} {day}")
         plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day, f"Original vs Masked IS {mask} {day}")
         plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
-        plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day, f"Original vs Imputed IS {mask} {day}")
-        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day, f"Original vs Imputed IV {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
+                f"Original vs Imputed IS {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
+                f"Original vs Imputed IV {mask} {day}")
         #
-        # statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day, f"Original vs Masked IS {mask} {day}")
-        # statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
-        # statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day, f"Original vs Imputed IS {mask} {day}")
-        # statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day, f"Original vs Imputed IV {mask} {day}")
+        statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day,
+                     f"Original vs Masked IS {mask} {day}")
+        statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day,
+                     f"Original vs Masked IV {mask} {day}")
+        statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
+                     f"Original vs Imputed IS {mask} {day}")
+        statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
+                     f"Original vs Imputed IV {mask} {day}")
 
 pprint(infodf)
 infodf.to_csv("blandaltman_stats.csv", index=False)
