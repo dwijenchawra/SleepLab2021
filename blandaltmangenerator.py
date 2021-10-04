@@ -1,4 +1,5 @@
 from pprint import pprint
+from time import sleep
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,13 +8,13 @@ import statsmodels.api as sm
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from tqdm import tqdm
 
-# original = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
-# imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
-# masked = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
-
-original = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
-imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
-masked = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
+original = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
+imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+masked = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
+#
+# original = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
+# imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+# masked = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
 
 maskCount = 30
 
@@ -40,6 +41,7 @@ repeatedOrig = repeatedOrig.join(imputedcsv["Weekday"])
 maskcol = []
 
 masks = list(dict.fromkeys(repeatedOrig["Mask Length"]))
+masks.remove("ZERODIVBLANK")
 days = list(dict.fromkeys(repeatedOrig["Weekday"]))
 print(len(masks) * len(days))
 
@@ -53,12 +55,16 @@ def plotter(axis, col1, col2, mask, day, title):
 
     try:
         plot = sm.graphics.mean_diff_plot(col1, col2, ax=ax)
+        plt.title(title)
+        plt.tight_layout()
+        canvas = FigureCanvas(fig)
+        canvas.print_figure('plots/' + title + ".png", bbox_inches="tight")
     except ValueError:
+        # print(col1)
+        # print(col2)
+        # sleep(20)
         pass
-    plt.title(title)
-    plt.tight_layout()
-    canvas = FigureCanvas(fig)
-    canvas.print_figure('plots/' + title + ".png", bbox_inches="tight")
+
     # plot.savefig(r"C:\Users\Jamie\PycharmProjects\SleepLab2021\plots" + "\\" + title + ".png", bbox_inches="tight")
     # # plt.show()
     # axis.cla()
@@ -82,11 +88,11 @@ for mask in masks:
 
         print(f"{mask} {day}")
         plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day, f"Original vs Masked IS {mask} {day}")
-        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
-        plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
-                f"Original vs Imputed IS {mask} {day}")
-        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
-                f"Original vs Imputed IV {mask} {day}")
+        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
+        # plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
+        #         f"Original vs Imputed IS {mask} {day}")
+        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
+        #         f"Original vs Imputed IV {mask} {day}")
         #
         statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day,
                      f"Original vs Masked IS {mask} {day}")
