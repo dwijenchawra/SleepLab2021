@@ -1,11 +1,10 @@
 import datetime
-import math
-
-import pandas as pd
-import numpy as np
 import os
 
+import numpy as np
+import pandas as pd
 from tqdm import tqdm
+
 from biobank_csv_prep_for_nparact import convertForNPARact
 
 completedFilesPath = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\documents\VirtualboxShared\completefiles\out\timeSeries"
@@ -135,9 +134,11 @@ def applyMaskOnce(filePath, mask, weekday, destination):
 def applyMultipleMaskSingleDay(filePath, mask, weekday, destination):
     # [((10, 12), (14, 16), (18, 20))]
     maskedFileName = os.path.join(maskedLocation,
-                                  os.path.basename(filePath)[:-4] + f".{weekday}.{maskToString(mask[0])}.MASKED.csv")
+                                  os.path.basename(filePath)[
+                                  :-4] + f".{weekday}.MULT{maskToString(mask[0])}.MASKED.csv")
     imputedFileName = os.path.join(imputedLocation,
-                                   os.path.basename(filePath)[:-4] + f"{weekday}.{maskToString(mask[0])}.IMPUTED.csv")
+                                   os.path.basename(filePath)[
+                                   :-4] + f"{weekday}.MULT{maskToString(mask[0])}.IMPUTED.csv")
     maskedDF = pd.read_csv(filePath, header=None)
     imputedDF = maskedDF.copy(deep=True)
 
@@ -238,7 +239,6 @@ print("Applying selected mask to files and imputing")
 nparACTPreppedFilesList = [os.path.join(nparACTPreppedFiles, file) for file in os.listdir(nparACTPreppedFiles)]
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 
@@ -282,9 +282,9 @@ for filePath in tqdm(nparACTPreppedFilesList):
     applyMaskOnce(filePath, SingleDayMasks.sixHourGap, "Saturday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Wednesday", maskedLocation)
     applyMaskOnce(filePath, SingleDayMasks.twentyFourHourGap, "Saturday", maskedLocation)
-    applyMultipleMaskSingleDay(filePath, SingleDayMasks.multipleSingleDay, "Wednesday", maskedLocation)
-    applyMultipleMaskSingleDay(filePath, SingleDayMasks.multipleSingleDay, "Saturday", maskedLocation)
-    applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek1, "WEEK", maskedLocation)
-    applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek2, "WEEK", maskedLocation)
+    # applyMultipleMaskSingleDay(filePath, SingleDayMasks.multipleSingleDay, "Wednesday", maskedLocation)
+    # applyMultipleMaskSingleDay(filePath, SingleDayMasks.multipleSingleDay, "Saturday", maskedLocation)
+    # applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek1, "WEEK", maskedLocation)
+    # applyMaskWeek(filePath, MultipleDayMasks.multipleInWeek2, "WEEK", maskedLocation)
 
 # filechecker()
