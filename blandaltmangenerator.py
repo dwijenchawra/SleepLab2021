@@ -12,7 +12,7 @@ from tqdm import tqdm
 # masked = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
 
 original = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\biobank_nparACTPreppedFiles\IVIS_data_ORIGINAL.csv"
-imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\backup_ukbb_imputed IVIS_data_imputed.csv"
 masked = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
 
 maskCount = 30
@@ -89,12 +89,12 @@ for mask in masks:
 
         print(f"{mask} {day}")
         plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day, f"Original vs Masked IS {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
-        #         f"Original vs Imputed IS {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
-        #         f"Original vs Imputed IV {mask} {day}")
-        #
+        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
+                f"Original vs Imputed IS {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
+                f"Original vs Imputed IV {mask} {day}")
+
         statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day,
                      f"Original vs Masked IS {mask} {day}")
         statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day,
@@ -114,12 +114,12 @@ for mask in ["10-12", "18-20"]:
 
         print(f"{mask} {day}")
         plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day, f"Original vs Masked IS {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
-        #         f"Original vs Imputed IS {mask} {day}")
-        # plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
-        #         f"Original vs Imputed IV {mask} {day}")
-        #
+        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day, f"Original vs Masked IV {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["IMPUTED IS"], mask, day,
+                f"Original vs Imputed IS {mask} {day}")
+        plotter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["IMPUTED IV"], mask, day,
+                f"Original vs Imputed IV {mask} {day}")
+
         statsPrinter(ax, maskdaydf["ORIGINAL IS"], maskdaydf["MASKED IS"], mask, day,
                      f"Original vs Masked IS {mask} {day}")
         statsPrinter(ax, maskdaydf["ORIGINAL IV"], maskdaydf["MASKED IV"], mask, day,
