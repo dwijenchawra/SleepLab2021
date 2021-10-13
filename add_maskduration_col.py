@@ -1,8 +1,8 @@
 import pandas as pd
 from tqdm import tqdm
 
-imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
-# imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_masked\ukbb_masked IVIS_data_masked.csv"
+# imputed = r"C:\Users\Zeitzer Lab\Desktop\DWIJEN_FILES\PycharmProjects\SleepLab2021\ukbb_imputed\ukbb_imputed IVIS_data_imputed.csv"
+imputed = r"C:\Users\dwije\PycharmProjects\GGIRanalysis\ukbb_imputed\backup_ukbb_imputed IVIS_data_imputed.csv"
 
 # maskedcsv = pd.read_csv(masked)
 imputedcsv = pd.read_csv(imputed)
@@ -15,6 +15,17 @@ nparactformat_1001778_90001_0_0.cwa.RData.Wednesday.18-20.IMPUTED.ZERODIVBLANK.c
 nparactformat_1001699_90001_0_0.cwa.RData.Saturday.10-12.IMPUTED.csv
 nparactformat_1011323_90001_3_0-timeSeries.WEEK.10-12.IMPUTED.csv
 '''
+
+
+def multitester(inputlist):
+    try:
+        mask = inputlist[3].split("-")
+        integer = int(mask[0])
+        return True
+    except ValueError:
+        return False
+
+
 for row in tqdm(range(len(imputedcsv["filename"]))):
     filename = str(imputedcsv["filename"][row])
     broken = filename.split(".")
@@ -22,6 +33,9 @@ for row in tqdm(range(len(imputedcsv["filename"]))):
     print(mask)
     if broken[-2] == "ZERODIVBLANK":
         masklencol.append("ZERODIVBLANK")
+        weekcol.append(broken[1])
+    elif multitester(broken):
+        masklencol.append(str("MULT" + broken[2]))
         weekcol.append(broken[1])
     else:
         masklencol.append(broken[2])
